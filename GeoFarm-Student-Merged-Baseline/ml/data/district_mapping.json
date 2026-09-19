@@ -1,0 +1,14 @@
+{
+  "_comment": "Normalize official dataset district names to GeoJSON NAME_2 values. Only verified mappings included — do not guess.",
+  "Ahilyanagar": "Ahmednagar",
+  "Chhatrapati Sambhajinagar": "Aurangabad",
+  "Aurangabad": "Aurangabad",
+  "Dharashiv": "Osmanabad",
+  "Osmanabad": "Osmanabad",
+  "Palghar": "Palghar",
+  "Bid": "Bid",
+  "Beed": "Bid",
+  "Greater Bombay": "Greater Bombay",
+  "Mumbai Suburban": "Mumbai Suburban",
+  "Mumbai City": "Greater Bombay"
+}

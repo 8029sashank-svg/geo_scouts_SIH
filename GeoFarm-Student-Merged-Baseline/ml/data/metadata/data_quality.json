@@ -1,0 +1,29 @@
+{
+  "districtCount": 34,
+  "years": ["2024-25"],
+  "featuresAvailable": ["district"],
+  "missingFeatures": ["crop_area", "crop_production", "crop_productivity", "temperature", "humidity", "rainfall", "soil_moisture", "ndvi", "ndwi", "pest_reports", "disease_reports", "crop_stress", "historical_yield"],
+  "unmatchedDistricts": [],
+  "duplicateRows": 0,
+  "missingValues": {
+    "crop_area": 34,
+    "crop_production": 34,
+    "crop_productivity": 34,
+    "temperature": 34,
+    "humidity": 34,
+    "rainfall": 34,
+    "soil_moisture": 34,
+    "ndvi": 34,
+    "ndwi": 34,
+    "pest_reports": 34,
+    "disease_reports": 34,
+    "crop_stress": 34,
+    "historical_yield": 34
+  },
+  "sourceCoverage": {
+    "REAL_OFFICIAL": "registered but values pending manual extraction",
+    "DEMO_SYNTHETIC": "active for 3D map — 1200 synthetic rows in ml/data/demo_synthetic.csv"
+  },
+  "status": "Real feature dataset skeleton created — values pending extraction from Krishi PDF / OGD API. ML training currently uses DEMO_SYNTHETIC. Do not train real model on missing data.",
+  "generatedAt": "2026-09-19"
+}

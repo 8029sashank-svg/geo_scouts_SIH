@@ -1,0 +1,54 @@
+[
+  {
+    "name": "Final Advance Estimates of Area, Production & Productivity of Principal Crops 2024-25 — District-wise APY Maharashtra",
+    "publisher": "Maharashtra Agriculture Department (Krishi Vibhag), Government of Maharashtra",
+    "url": "http://krishi.maharashtra.gov.in/Site/Upload/GR/DISTRICTWISE%20APY-2024-25.pdf",
+    "year": "2024-25",
+    "geographicLevel": "district",
+    "dataType": "crop_area_production_productivity",
+    "licenseOrAccess": "Not specified on source page — public GR PDF",
+    "retrievedAt": "2026-09-19",
+    "notes": "PDF table with district rows and crop columns (area, production, productivity). Requires manual extraction or PDF table parsing; not a stable machine-readable API. Source available, dataset not directly machine-readable in current automation.",
+    "status": "source available — manual extraction pending",
+    "type": "REAL_OFFICIAL"
+  },
+  {
+    "name": "District-wise, season-wise, crop-wise Area, Production and Yield Statistics for Maharashtra",
+    "publisher": "Directorate of Economics and Statistics, Ministry of Agriculture and Farmers Welfare — Unified Portal for Agricultural Statistics (UPAg), via OGD Platform India",
+    "url": "https://www.data.gov.in/catalog/district-wise-season-wise-crop-production-statistics-0",
+    "year": "1997-98 to 2024-25",
+    "geographicLevel": "district",
+    "dataType": "crop_area_production_yield",
+    "licenseOrAccess": "Government Open Data License — India (GODL), via data.gov.in",
+    "retrievedAt": "2026-09-19",
+    "notes": "Machine-readable API available on data.gov.in (requires API key). Dataset mirrored on dataful.in/5632 with 23550 rows. Covers district, season, crop, area (ha), production (tonnes), yield (kg/ha). Verified as official source but not auto-downloaded in this phase; pipeline prepared for API integration.",
+    "status": "source available — API integration pending (requires key)",
+    "type": "REAL_OFFICIAL"
+  },
+  {
+    "name": "Maharashtra State Data Bank — Agriculture and Allied Activities (Production Crops / Irrigation Area)",
+    "publisher": "Directorate of Economics and Statistics, Government of Maharashtra (MahaDB)",
+    "url": "http://mahasdb.maharashtra.gov.in/rawData.do",
+    "year": "2010-11 to 2012-13 (sample range checked)",
+    "geographicLevel": "district",
+    "dataType": "crop_production_irrigation",
+    "licenseOrAccess": "Not specified on source page",
+    "retrievedAt": "2026-09-19",
+    "notes": "Portal exposes district/year selectors with ZIP XML downloads. Datasets exist but require manual selection and per-district ZIP handling; no single stable bulk API found in this phase. Documented as contextual reference.",
+    "status": "source available — manual handling required",
+    "type": "REAL_OFFICIAL"
+  },
+  {
+    "name": "Demo Synthetic Training Dataset",
+    "publisher": "GeoFarm ML Prototype (synthetic generator in ml/train.py)",
+    "url": "ml/data/demo_synthetic.csv",
+    "year": "synthetic — seed 42",
+    "geographicLevel": "synthetic_sample",
+    "dataType": "synthetic_weather_soil_vegetation_reports",
+    "licenseOrAccess": "Internal demo — no license",
+    "retrievedAt": "2026-09-19",
+    "notes": "DEMO DATA ONLY — replace with verified real datasets before real-world deployment. Currently active for model training and 3D map predictions.",
+    "status": "active — DEMO_SYNTHETIC",
+    "type": "DEMO_SYNTHETIC"
+  }
+]
