@@ -62,14 +62,6 @@ export function ScoutProvider({ children }) {
     });
   }, []);
 
-  const patchVisit = useCallback((caseId, patch) => {
-    if (!caseId) return;
-    setVisits((prev) => {
-      const current = prev[caseId] || { status: 'Not Started', checkedInAt: null };
-      return { ...prev, [caseId]: { ...current, ...patch } };
-    });
-  }, []);
-
   // Phase 3B (mock only): points earned by completing field visits.
   // Phase 5 drives all displays from totalPoints below — one source.
   const [extraPoints, setExtraPoints] = useState(0);
@@ -172,7 +164,6 @@ export function ScoutProvider({ children }) {
       // Farmer names live on the Nearby Cases mock (missions only carry
       // field/location) — look up for the report record. Mock only.
       const nearbyCase = NEARBY_CASES.find((c) => c.id === mission.id);
-      const v = visits[mission.id] || {};
       const report = {
         id,
         missionId: mission.id,
@@ -183,35 +174,36 @@ export function ScoutProvider({ children }) {
         location: mission.location,
         coordinates: mission.coords,
         crop: mission.crop,
+        variety: reportData.variety || null,
+        growthStage: reportData.growthStage || null,
+        area: reportData.area || null,
         finding: reportData.finding,
         risk: reportData.risk,
-        status: 'Under Review',
+        status: 'Awaiting Officer Review',
         submittedAt: 'Just now',
         dataQuality: reportData.dataQuality,
-        aiConfidence: reportData.aiConfidence,
+        aiConfidence: reportData.aiConfidence ?? reportData.aiAssessment?.confidence ?? null,
+        aiAssessment: reportData.aiAssessment || null,
+        scoutVerification: reportData.scoutVerification || null,
+        severity: reportData.severity || null,
+        fieldNotes: reportData.fieldNotes || '',
         trapCount: reportData.trapCount ?? null,
         trend: reportData.trend ?? null,
         photos: reportData.photos ?? 0,
         symptoms: reportData.symptoms || [],
         condition: reportData.condition || null,
         timeline: reportData.timeline || [],
+        // Set by a future Agriculture Officer portal — always null on submit.
+        officerComment: null,
         synced: false,
-        // Visit metadata — only actual values, no fake coords
-        visitStartTime: v.visitStartTime || null,
-        visitEndTime: v.visitEndTime || null,
-        visitLatitude: v.lastLat ?? null,
-        visitLongitude: v.lastLng ?? null,
-        visitAccuracy: v.lastAccuracy ?? null,
-        visitDistanceM: v.distanceM ?? 0,
-        visitGpsStatus: v.gpsStatus || 'unavailable',
-        visitPoints: v.points ? v.points.slice(-50) : [],
       };
-      // Phase 4: merge Field Visit evidence (session-only dataURLs +
-      // descriptions) so the report retains what was collected in the visit.
-      const visitEvidence = visits[mission.id]?.photos || [];
+      // Evidence photos: prefer what the caller passes directly (avoids a
+      // stale-closure race with the addVisitPhotos() call fired just before
+      // submit). Fall back to the shared visits store for older callers.
+      const visitEvidence = reportData.evidence || visits[mission.id]?.photos || [];
       if (visitEvidence.length > 0) {
         report.evidence = visitEvidence;
-        report.photos = (reportData.photos ?? 0) + visitEvidence.length;
+        report.photos = Math.max(reportData.photos ?? 0, visitEvidence.length);
       }
       setReports((prev) => [report, ...prev]);
       // Phase 3B: a submitted report completes the assignment chain —
@@ -260,7 +252,6 @@ export function ScoutProvider({ children }) {
       queueForSync,
       visits,
       updateVisitStatus,
-      patchVisit,
       addVisitPhotos,
       updateVisitPhoto,
       removeVisitPhoto,
@@ -289,7 +280,6 @@ export function ScoutProvider({ children }) {
       queueForSync,
       visits,
       updateVisitStatus,
-      patchVisit,
       addVisitPhotos,
       updateVisitPhoto,
       removeVisitPhoto,
