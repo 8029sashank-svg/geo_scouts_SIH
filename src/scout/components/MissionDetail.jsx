@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Droplets, Leaf, Users, Activity, CheckSquare, MapPin, ArrowRight, Target, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Droplets, Leaf, Users, Activity, CheckSquare, MapPin, ArrowRight, Target, AlertTriangle, Navigation } from 'lucide-react';
 import { Card, CardHeader } from '../../components/ui/Card.jsx';
 import { useScout } from '../ScoutContext.jsx';
 import { PriorityChip, MissionStatusChip } from './Chips.jsx';
@@ -38,6 +38,27 @@ export default function MissionDetail({ missionId, onBack, onStartVisit }) {
   const handleStart = () => {
     updateMissionStatus(mission.id, MISSION_STATUS.IN_PROGRESS);
     onStartVisit(mission.id);
+  };
+
+  // Build a Google Maps URL from the mission's existing coordinates.
+  // Priority: coords → location string → unavailable.
+  // No fake coordinates are generated.
+  const hasCoords =
+    Array.isArray(mission.coords) &&
+    mission.coords.length === 2 &&
+    typeof mission.coords[0] === 'number' &&
+    typeof mission.coords[1] === 'number';
+  const hasLocation = typeof mission.location === 'string' && mission.location.trim().length > 0;
+
+  let googleMapsUrl = null;
+  if (hasCoords) {
+    googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${mission.coords[0]},${mission.coords[1]}`;
+  } else if (hasLocation) {
+    googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mission.location.trim())}`;
+  }
+
+  const handleNavigate = () => {
+    if (googleMapsUrl) window.open(googleMapsUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -140,6 +161,43 @@ export default function MissionDetail({ missionId, onBack, onStartVisit }) {
           The completed Field Verification Report will be sent to the Agriculture Officer for review.
         </p>
       </Card>
+
+      {/* ── Navigate to Field ─────────────────────────────────────── */}
+      <div className="border border-gov-border rounded-lg p-4 bg-white">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <p className="text-xs font-bold text-gov-textSec uppercase tracking-wide">Field Location</p>
+            <p className="text-sm font-semibold text-gov-navy mt-0.5 flex items-center gap-1">
+              <MapPin size={13} className="shrink-0" /> {mission.location}
+            </p>
+            {mission.fieldName && (
+              <p className="text-xs text-gov-textSec mt-0.5">{mission.fieldName}</p>
+            )}
+            {hasCoords && (
+              <p className="text-xs text-gov-textSec mt-0.5">
+                {mission.coords[0].toFixed(4)}° N, {mission.coords[1].toFixed(4)}° E
+              </p>
+            )}
+          </div>
+        </div>
+        {googleMapsUrl ? (
+          <button
+            onClick={handleNavigate}
+            className="w-full flex items-center justify-center gap-2 border border-gov-blue text-gov-blue hover:bg-gov-blue hover:text-white font-bold text-sm py-2.5 rounded-lg transition-colors"
+          >
+            <Navigation size={15} />
+            Navigate to Field
+          </button>
+        ) : (
+          <div className="w-full flex items-center justify-center gap-2 border border-gray-200 text-gray-400 text-sm py-2.5 rounded-lg cursor-not-allowed bg-gray-50">
+            <Navigation size={15} />
+            Navigation location unavailable for this case.
+          </div>
+        )}
+        {hasCoords && (
+          <p className="text-[11px] text-gov-textSec mt-2 text-center">Opens Google Maps in a new tab</p>
+        )}
+      </div>
 
       <div className="sticky bottom-16 lg:bottom-0 lg:static pt-2">
         {mission.status === MISSION_STATUS.COMPLETED || mission.status === MISSION_STATUS.UNDER_REVIEW || mission.status === MISSION_STATUS.VERIFIED ? (
