@@ -1,0 +1,29 @@
+[
+  {
+    "id": "GF-1042",
+    "title": "Powdery Mildew Surveillance",
+    "location": "Dindori, Nashik",
+    "crop": "Grapes",
+    "priority": "HIGH",
+    "status": "Pending",
+    "assignedBy": "Agriculture Officer — Nashik Division"
+  },
+  {
+    "id": "GF-1038",
+    "title": "Fruit Fly Trap Inspection",
+    "location": "Niphad, Nashik",
+    "crop": "Grapes",
+    "priority": "MEDIUM",
+    "status": "Completed",
+    "assignedBy": "Agriculture Officer — Nashik Division"
+  },
+  {
+    "id": "GF-1035",
+    "title": "Onion Thrips Check",
+    "location": "Sinnar, Nashik",
+    "crop": "Onion",
+    "priority": "LOW",
+    "status": "Accepted",
+    "assignedBy": "Agriculture Officer — Nashik Division"
+  }
+]

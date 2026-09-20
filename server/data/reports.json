@@ -1,0 +1,40 @@
+[
+  {
+    "id": "GF-RPT-1039",
+    "missionId": "GF-1038",
+    "scoutId": "GFS-AG-0248",
+    "scoutName": "Aarav Patil",
+    "field": "Niphad",
+    "location": "Niphad, Nashik",
+    "coordinates": [20.0844, 74.111],
+    "crop": "Grapes",
+    "finding": "Fruit Fly",
+    "risk": "MEDIUM",
+    "status": "Verified",
+    "submittedAt": "Yesterday, 11:20 AM",
+    "dataQuality": 90,
+    "aiConfidence": 81,
+    "trapCount": 11,
+    "trend": "+22%",
+    "photos": 3
+  },
+  {
+    "id": "GF-RPT-1031",
+    "missionId": null,
+    "scoutId": "GFS-AG-0248",
+    "scoutName": "Aarav Patil",
+    "field": "Sinnar",
+    "location": "Sinnar, Nashik",
+    "coordinates": [19.8496, 73.9866],
+    "crop": "Onion",
+    "finding": "No major issue",
+    "risk": "LOW",
+    "status": "Verified",
+    "submittedAt": "4 days ago",
+    "dataQuality": 88,
+    "aiConfidence": 74,
+    "trapCount": null,
+    "trend": null,
+    "photos": 2
+  }
+]

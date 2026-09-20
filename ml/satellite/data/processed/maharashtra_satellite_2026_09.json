@@ -1,0 +1,96 @@
+{
+  "processingTimestamp": "2026-09-19T13:30:48.383844Z",
+  "source": "GeoFarm Prototype",
+  "provider": "demo",
+  "sourceDate": "2026-08-01 to 2026-09-15",
+  "processingVersion": "v1",
+  "maxCloudPercent": 20,
+  "isRealData": false,
+  "districts": {
+    "Nashik": {
+      "district": "Nashik",
+      "ndviMean": 0.61,
+      "ndviMin": 0.46,
+      "ndviMax": 0.73,
+      "ndwiMean": -0.12,
+      "ndwiMin": -0.24,
+      "ndwiMax": -0.02,
+      "validPixelPercent": 94,
+      "cloudPercent": 8,
+      "provider": "demo",
+      "dataSource": "GeoFarm Prototype",
+      "sourceDate": "2026-09-01",
+      "processingVersion": "v1",
+      "isRealData": false,
+      "quality": {
+        "status": "good",
+        "validPixelPercent": 94,
+        "cloudPercent": 8
+      }
+    },
+    "Solapur": {
+      "district": "Solapur",
+      "ndviMean": 0.48,
+      "ndviMin": 0.33,
+      "ndviMax": 0.6,
+      "ndwiMean": -0.13,
+      "ndwiMin": -0.25,
+      "ndwiMax": -0.03,
+      "validPixelPercent": 78,
+      "cloudPercent": 17,
+      "provider": "demo",
+      "dataSource": "GeoFarm Prototype",
+      "sourceDate": "2026-09-01",
+      "processingVersion": "v1",
+      "isRealData": false,
+      "quality": {
+        "status": "good",
+        "validPixelPercent": 78,
+        "cloudPercent": 17
+      }
+    },
+    "Pune": {
+      "district": "Pune",
+      "ndviMean": 0.58,
+      "ndviMin": 0.43,
+      "ndviMax": 0.7,
+      "ndwiMean": 0.02,
+      "ndwiMin": -0.1,
+      "ndwiMax": 0.12,
+      "validPixelPercent": 91,
+      "cloudPercent": 9,
+      "provider": "demo",
+      "dataSource": "GeoFarm Prototype",
+      "sourceDate": "2026-09-01",
+      "processingVersion": "v1",
+      "isRealData": false,
+      "quality": {
+        "status": "good",
+        "validPixelPercent": 91,
+        "cloudPercent": 9
+      }
+    },
+    "Ahmednagar": {
+      "district": "Ahmednagar",
+      "ndviMean": 0.48,
+      "ndviMin": 0.33,
+      "ndviMax": 0.6,
+      "ndwiMean": 0.05,
+      "ndwiMin": -0.07,
+      "ndwiMax": 0.15,
+      "validPixelPercent": 89,
+      "cloudPercent": 12,
+      "provider": "demo",
+      "dataSource": "GeoFarm Prototype",
+      "sourceDate": "2026-09-01",
+      "processingVersion": "v1",
+      "isRealData": false,
+      "quality": {
+        "status": "good",
+        "validPixelPercent": 89,
+        "cloudPercent": 12
+      }
+    }
+  },
+  "note": "Demo fallback active \u2014 no GEE credentials. Replace with real Sentinel-2 when configured."
+}
