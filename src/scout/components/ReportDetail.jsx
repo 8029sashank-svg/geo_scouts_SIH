@@ -85,6 +85,7 @@ export default function ReportDetail({ reportId, onBack, onStartRevisit }) {
         <dl className="space-y-2 text-sm">
           <Row label="Submitted" value={report.submittedAt} />
           {report.farmer && <Row label="Farmer" value={report.farmer} />}
+          {report.farmerAvailability && <Row label="Farmer availability" value={report.farmerAvailability} />}
           <Row label="AI confidence" value={report.aiConfidence ? `${report.aiConfidence}%` : '—'} />
           {report.symptoms && report.symptoms.length > 0 && (
             <Row label="Symptoms" value={report.symptoms.join(', ')} />

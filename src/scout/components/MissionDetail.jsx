@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Droplets, Leaf, Users, Activity, CheckSquare, MapPin, ArrowRight, Target, AlertTriangle, Navigation } from 'lucide-react';
+import { ArrowLeft, Droplets, Leaf, Users, Activity, CheckSquare, MapPin, ArrowRight, Target, AlertTriangle, Navigation, User, Phone, Calendar, Clock } from 'lucide-react';
 import { Card, CardHeader } from '../../components/ui/Card.jsx';
 import { useScout } from '../ScoutContext.jsx';
 import { PriorityChip, MissionStatusChip } from './Chips.jsx';
@@ -7,7 +7,7 @@ import { MISSION_STATUS } from '../mockData.js';
 import { STUDENT_OPERATING_RADIUS_KM, isWithinOperatingRadius } from '../config.js';
 
 export default function MissionDetail({ missionId, onBack, onStartVisit }) {
-  const { missions, updateMissionStatus } = useScout();
+  const { missions, updateMissionStatus, farmerAvailabilities, updateFarmerAvailability } = useScout();
   const mission = missions.find((m) => m.id === missionId);
 
   if (!mission) {
@@ -77,6 +77,72 @@ export default function MissionDetail({ missionId, onBack, onStartVisit }) {
           <MapPin size={13} /> {mission.location}
         </p>
       </div>
+
+      <Card>
+        <CardHeader icon={User} title="Farmer / Field" />
+        <dl className="grid grid-cols-2 gap-y-3 text-sm">
+          <dt className="text-gov-textSec">Farmer Name</dt>
+          <dd className="font-semibold text-gov-navy text-right">{mission.farmerName || '—'}</dd>
+          
+          <dt className="text-gov-textSec">Farmer ID</dt>
+          <dd className="font-semibold text-gov-navy text-right">{mission.farmerId || '—'}</dd>
+          
+          <dt className="text-gov-textSec">Field ID</dt>
+          <dd className="font-semibold text-gov-navy text-right">{mission.fieldId || '—'}</dd>
+          
+          <dt className="text-gov-textSec">Plot Number</dt>
+          <dd className="font-semibold text-gov-navy text-right">{mission.plotNumber || '—'}</dd>
+          
+          <dt className="text-gov-textSec">Village / Location</dt>
+          <dd className="font-semibold text-gov-navy text-right">{mission.location}</dd>
+          
+          <dt className="text-gov-textSec">Crop</dt>
+          <dd className="font-semibold text-gov-navy text-right">{mission.crop}</dd>
+        </dl>
+        
+        <div className="mt-4 pt-4 border-t border-gray-100 flex gap-3">
+          {mission.farmerPhone ? (
+            <a 
+              href={`tel:${mission.farmerPhone.replace(/\s+/g, '')}`}
+              className="flex-1 bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 font-semibold py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
+            >
+              <Phone size={15} /> Call Farmer
+            </a>
+          ) : (
+            <div className="flex-1 bg-gray-50 text-gray-400 border border-gray-200 font-semibold py-2 rounded-lg flex items-center justify-center gap-2 cursor-not-allowed">
+              <Phone size={15} /> No Phone
+            </div>
+          )}
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader icon={Calendar} title="Visit Schedule & Preparation" />
+        <dl className="grid grid-cols-2 gap-y-3 text-sm mb-4">
+          <dt className="text-gov-textSec flex items-center gap-1.5"><Calendar size={13} /> Visit Date</dt>
+          <dd className="font-semibold text-gov-navy text-right">{mission.visitDate || '—'}</dd>
+          
+          <dt className="text-gov-textSec flex items-center gap-1.5"><Clock size={13} /> Preferred Time</dt>
+          <dd className="font-semibold text-gov-navy text-right">{mission.preferredTime || '—'}</dd>
+        </dl>
+
+        <div className="pt-3 border-t border-gray-100">
+          <label className="block text-xs font-bold text-gov-textSec uppercase tracking-wide mb-1.5">
+            Farmer Availability
+          </label>
+          <select 
+            value={farmerAvailabilities[mission.id] || ''}
+            onChange={(e) => updateFarmerAvailability(mission.id, e.target.value)}
+            className="w-full bg-white border border-gov-border rounded-lg p-2.5 text-sm focus:outline-none focus:border-gov-blue text-gov-navy font-semibold"
+          >
+            <option value="" disabled>Select availability...</option>
+            <option value="Available">Available</option>
+            <option value="Unavailable">Unavailable</option>
+            <option value="Not Contacted">Not Contacted</option>
+            <option value="Unable to Reach">Unable to Reach</option>
+          </select>
+        </div>
+      </Card>
 
       <Card>
         <CardHeader title="Mission Overview" />
@@ -160,6 +226,32 @@ export default function MissionDetail({ missionId, onBack, onStartVisit }) {
         <p className="text-xs text-gov-textSec border-t border-gray-100 pt-3">
           The completed Field Verification Report will be sent to the Agriculture Officer for review.
         </p>
+      </Card>
+
+      <Card>
+        <CardHeader title="Before You Visit" subtitle="Preparation checklist" />
+        <ul className="space-y-2 text-sm text-gov-navy font-semibold">
+          <li className="flex items-center gap-2">
+            <CheckSquare size={14} className={mission.farmerName ? 'text-green-600' : 'text-gray-300'} /> 
+            Farmer information {mission.farmerName ? 'available' : 'missing'}
+          </li>
+          <li className="flex items-center gap-2">
+            <CheckSquare size={14} className={hasCoords || hasLocation ? 'text-green-600' : 'text-gray-300'} /> 
+            Field location {hasCoords || hasLocation ? 'available' : 'missing'}
+          </li>
+          <li className="flex items-center gap-2">
+            <CheckSquare size={14} className={googleMapsUrl ? 'text-green-600' : 'text-gray-300'} /> 
+            Navigation {googleMapsUrl ? 'available' : 'unavailable'}
+          </li>
+          <li className="flex items-center gap-2">
+            <CheckSquare size={14} className={mission.visitDate ? 'text-green-600' : 'text-gray-300'} /> 
+            Visit date/time {mission.visitDate ? 'scheduled' : 'not scheduled'}
+          </li>
+          <li className="flex items-center gap-2">
+            <CheckSquare size={14} className={farmerAvailabilities[mission.id] && farmerAvailabilities[mission.id] !== 'Not Contacted' ? 'text-green-600' : 'text-gray-300'} /> 
+            Farmer availability {farmerAvailabilities[mission.id] ? `(${farmerAvailabilities[mission.id]})` : '(Not recorded)'}
+          </li>
+        </ul>
       </Card>
 
       {/* ── Navigate to Field ─────────────────────────────────────── */}

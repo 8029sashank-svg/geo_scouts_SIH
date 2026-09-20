@@ -62,6 +62,11 @@ export function ScoutProvider({ children }) {
     });
   }, []);
 
+  const [farmerAvailabilities, setFarmerAvailabilities] = useState({});
+  const updateFarmerAvailability = useCallback((caseId, status) => {
+    setFarmerAvailabilities((prev) => ({ ...prev, [caseId]: status }));
+  }, []);
+
   // Phase 3B (mock only): points earned by completing field visits.
   // Phase 5 drives all displays from totalPoints below — one source.
   const [extraPoints, setExtraPoints] = useState(0);
@@ -199,6 +204,7 @@ export function ScoutProvider({ children }) {
         // Set by a future Agriculture Officer portal — always null on submit.
         officerComment: null,
         synced: false,
+        farmerAvailability: farmerAvailabilities[mission.id] || null,
       };
       // Evidence photos: prefer what the caller passes directly (avoids a
       // stale-closure race with the addVisitPhotos() call fired just before
@@ -233,7 +239,7 @@ export function ScoutProvider({ children }) {
 
       return report;
     },
-    [isOnline, queueForSync, addNotification, updateMissionStatus, markSynced, updateVisitStatus, awardPoints, visits, awardedReportIds]
+    [isOnline, queueForSync, addNotification, updateMissionStatus, markSynced, updateVisitStatus, awardPoints, visits, awardedReportIds, farmerAvailabilities]
   );
 
   // Applies a status + optional officerComment to a report. Used to
@@ -279,6 +285,8 @@ export function ScoutProvider({ children }) {
       // sessionCompletions counts reports awarded this session.
       totalPoints: SCOUT_PROFILE.points + extraPoints,
       sessionCompletions: Object.keys(awardedReportIds).length,
+      farmerAvailabilities,
+      updateFarmerAvailability,
     }),
     [
       missions,
@@ -304,6 +312,8 @@ export function ScoutProvider({ children }) {
       extraPoints,
       awardPoints,
       awardedReportIds,
+      farmerAvailabilities,
+      updateFarmerAvailability,
     ]
   );
 

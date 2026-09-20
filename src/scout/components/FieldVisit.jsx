@@ -95,7 +95,7 @@ function StepDots({ step }) {
 }
 
 export default function FieldVisit({ visitId, onBack, onComplete }) {
-  const { scout, missions, traps, isOnline, submitReport, addVisitPhotos } = useScout();
+  const { scout, missions, traps, isOnline, submitReport, addVisitPhotos, farmerAvailabilities, updateFarmerAvailability } = useScout();
 
   const mission = missions.find((m) => m.id === visitId);
   const nearbyCase = NEARBY_CASES.find((c) => c.id === visitId);
@@ -350,6 +350,23 @@ export default function FieldVisit({ visitId, onBack, onComplete }) {
             <dt className="text-gov-textSec">Date</dt>
             <dd className="font-semibold text-gov-navy text-right">{new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</dd>
           </dl>
+
+          <div className="border-t border-gray-100 pt-3 pb-2">
+            <label className="block text-xs font-bold text-gov-textSec uppercase tracking-wide mb-1.5">
+              Farmer Availability
+            </label>
+            <select 
+              value={farmerAvailabilities[mission?.id] || ''}
+              onChange={(e) => updateFarmerAvailability(mission?.id, e.target.value)}
+              className="w-full bg-white border border-gov-border rounded-lg p-2.5 text-sm focus:outline-none focus:border-gov-blue text-gov-navy font-semibold"
+            >
+              <option value="" disabled>Select availability...</option>
+              <option value="Available">Available</option>
+              <option value="Unavailable">Unavailable</option>
+              <option value="Not Contacted">Not Contacted</option>
+              <option value="Unable to Reach">Unable to Reach</option>
+            </select>
+          </div>
 
           <div className="border-t border-gray-100 pt-4">
             <p className="text-xs font-bold text-gov-textSec uppercase tracking-wide mb-2">Farm / Location Check-in</p>

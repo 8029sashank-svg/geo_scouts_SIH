@@ -1,19 +1,10 @@
 import React from 'react';
-import { BadgeCheck, School, MapPin, LogOut, Star } from 'lucide-react';
+import { BadgeCheck, School, LogOut, IndianRupee, Wallet, MapPin } from 'lucide-react';
 import { Card, CardHeader } from '../../components/ui/Card.jsx';
 import { useScout } from '../ScoutContext.jsx';
-import { CERTIFICATES, MISSION_STATUS } from '../mockData.js';
 
 export default function Profile({ onLogout }) {
-  const { scout, missions, totalPoints, sessionCompletions } = useScout();
-  // Mock mapping: verified reports stand in for assisted cases.
-  const casesAssisted = scout.stats.reportsVerified + sessionCompletions;
-  const earnedCerts = CERTIFICATES.filter((c) => c.status === 'Earned').length;
-  // Same derived rule as the Dashboard: share of assigned missions done.
-  const completedCount = missions.filter(
-    (m) => m.status === MISSION_STATUS.COMPLETED || m.status === MISSION_STATUS.UNDER_REVIEW
-  ).length;
-  const participationPct = missions.length === 0 ? 0 : Math.round((completedCount / missions.length) * 100);
+  const { scout, sessionCompletions } = useScout();
 
   return (
     <div className="space-y-4 max-w-xl mx-auto">
@@ -56,13 +47,55 @@ export default function Profile({ onLogout }) {
       </Card>
 
       <Card>
-        <CardHeader icon={Star} title="Student Progress" subtitle="Points, cases & participation (mock)" />
-        <div className="grid grid-cols-2 gap-3">
-          <Stat label="Points" value={totalPoints} />
-          <Stat label="Cases Assisted" value={casesAssisted} />
-          <Stat label="Certificates" value={earnedCerts} />
-          <Stat label="Participation" value={`${participationPct}%`} />
+        <CardHeader icon={IndianRupee} title="Field Visit Reimbursement" subtitle="Demo visualization of stipend tracking" />
+        <div className="space-y-3">
+          <div className="border border-gov-border rounded-lg p-3 text-sm">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="font-bold text-gov-navy">GF-1042 — Dindori</p>
+                <p className="text-xs text-gov-textSec mt-0.5">Powdery Mildew field visit</p>
+              </div>
+              <span className="font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded text-xs border border-green-200">
+                Approved
+              </span>
+            </div>
+            <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+              <span className="text-xs text-gov-textSec">Stipend Amount</span>
+              <span className="font-bold text-gov-navy">₹150</span>
+            </div>
+          </div>
+          
+          <div className="border border-gov-border rounded-lg p-3 text-sm">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="font-bold text-gov-navy">GF-1038 — Niphad</p>
+                <p className="text-xs text-gov-textSec mt-0.5">Fruit Fly Trap Inspection</p>
+              </div>
+              <span className="font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded text-xs border border-purple-200">
+                Under Review
+              </span>
+            </div>
+            <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+              <span className="text-xs text-gov-textSec">Stipend Amount</span>
+              <span className="font-bold text-gov-navy">₹150</span>
+            </div>
+          </div>
         </div>
+      </Card>
+
+      <Card>
+        <CardHeader icon={Wallet} title="Payment Details" subtitle="Synthetic demo values only" />
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-3">
+          <p className="text-xs text-orange-800 font-medium">
+            This is an MVP visualization. Real financial data is NOT verified or stored.
+          </p>
+        </div>
+        <dl className="space-y-2 text-sm">
+          <Row label="UPI ID" value="aarav-demo@upi" />
+          <Row label="Bank Account" value="••••4821" />
+          <Row label="IFSC Code" value="DEMO0001234" />
+          <Row label="Status" value={<span className="text-orange-600 font-bold">Demo / Not Verified</span>} />
+        </dl>
       </Card>
 
       <button
