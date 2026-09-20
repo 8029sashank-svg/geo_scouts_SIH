@@ -174,7 +174,7 @@ export function ScoutProvider({ children }) {
         missionId: mission.id,
         scoutId: SCOUT_PROFILE.scoutId,
         scoutName: SCOUT_PROFILE.name,
-        farmer: nearbyCase?.farmer || null,
+        farmer: mission.farmerName || nearbyCase?.farmer || null,
         field: mission.location.split(',')[0],
         location: mission.location,
         coordinates: mission.coords,

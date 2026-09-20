@@ -66,20 +66,52 @@ const MAX_PHOTOS = 8;
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const DEFAULT_REASON = { humidity: 65, leafWetness: 'Moderate', nearbyReports: 0 };
 
-function readAsPhoto(file, category) {
+function compressImage(dataUrl, maxWidth, maxHeight, quality) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+
+      if (width > height) {
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = dataUrl;
+  });
+}
+
+async function readAsPhoto(file, category) {
   return new Promise((resolve) => {
     const reader = new FileReader();
-    reader.onload = () =>
+    reader.onload = async () => {
+      const compressedDataUrl = await compressImage(reader.result, 800, 800, 0.7);
       resolve({
         id: `EV-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
         category,
         name: file.name,
-        type: file.type,
-        size: file.size,
-        dataUrl: reader.result,
+        type: 'image/jpeg',
+        size: Math.round((compressedDataUrl.length * 3) / 4),
+        dataUrl: compressedDataUrl,
         description: '',
         capturedAt: new Date().toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }),
       });
+    };
     reader.readAsDataURL(file);
   });
 }
@@ -94,8 +126,42 @@ function StepDots({ step }) {
   );
 }
 
+function ReadinessItem({ label, done, onFix, notRequired }) {
+  if (notRequired) {
+    return (
+      <div className="flex items-center justify-between text-xs py-1">
+        <span className="text-gray-400 flex items-center gap-1.5"><CheckCircle2 size={14} className="text-gray-300" /> {label}</span>
+        <span className="text-gray-400 text-[10px] font-semibold bg-gray-100 px-1.5 py-0.5 rounded">Not Required</span>
+      </div>
+    );
+  }
+  if (done) {
+    return (
+      <div className="flex items-center justify-between text-xs py-1">
+        <span className="text-green-700 font-medium flex items-center gap-1.5"><CheckCircle2 size={14} /> {label}</span>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center justify-between text-xs py-1">
+      <span className="text-red-600 font-medium flex items-center gap-1.5"><XCircle size={14} /> {label}</span>
+      <button onClick={onFix} className="text-gov-blue font-bold text-[11px] bg-gov-blue/10 px-2 py-0.5 rounded hover:bg-gov-blue/20 transition-colors">Fix</button>
+    </div>
+  );
+}
+
 export default function FieldVisit({ visitId, onBack, onComplete }) {
-  const { scout, missions, traps, isOnline, submitReport, addVisitPhotos, farmerAvailabilities, updateFarmerAvailability } = useScout();
+  const {
+    scout,
+    missions,
+    traps,
+    isOnline,
+    reports,
+    submitReport,
+    addVisitPhotos,
+    farmerAvailabilities,
+    updateFarmerAvailability
+  } = useScout();
 
   const mission = missions.find((m) => m.id === visitId);
   const nearbyCase = NEARBY_CASES.find((c) => c.id === visitId);
@@ -149,8 +215,80 @@ export default function FieldVisit({ visitId, onBack, onComplete }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(null);
 
+  const [saveStatus, setSaveStatus] = useState('');
+  const draftKey = `geofarm_draft_${visitId}`;
+  
+  // Read draft on mount
+  React.useEffect(() => {
+    // If the report was already submitted (has an ID), don't restore the draft
+    const isSubmitted = reports && reports.some(r => r.missionId === visitId);
+    if (isSubmitted) return;
+    try {
+      const stored = localStorage.getItem(draftKey);
+      if (stored) {
+        const draft = JSON.parse(stored);
+        if (draft.step !== undefined) setStep(draft.step);
+        if (draft.checkedIn !== undefined) setCheckedIn(draft.checkedIn);
+        if (draft.checkinAt !== undefined) setCheckinAt(draft.checkinAt);
+        if (draft.visitOutcome !== undefined) setVisitOutcome(draft.visitOutcome);
+        if (draft.outcomeNote !== undefined) setOutcomeNote(draft.outcomeNote);
+        if (draft.crop !== undefined) setCrop(draft.crop);
+        if (draft.variety !== undefined) setVariety(draft.variety);
+        if (draft.growthStage !== undefined) setGrowthStage(draft.growthStage);
+        if (draft.area !== undefined) setArea(draft.area);
+        if (draft.condition !== undefined) setCondition(draft.condition);
+        if (draft.symptoms !== undefined) setSymptoms(draft.symptoms);
+        if (draft.fieldNotes !== undefined) setFieldNotes(draft.fieldNotes);
+        if (draft.evidencePhotos !== undefined) setEvidencePhotos(draft.evidencePhotos);
+        if (draft.trapResult !== undefined) setTrapResult(draft.trapResult);
+        if (draft.trapVerification !== undefined) setTrapVerification(draft.trapVerification);
+        if (draft.affectedArea !== undefined) setAffectedArea(draft.affectedArea);
+        if (draft.spread !== undefined) setSpread(draft.spread);
+        if (draft.aiResult !== undefined) setAiResult(draft.aiResult);
+        if (draft.verificationStatus !== undefined) setVerificationStatus(draft.verificationStatus);
+        if (draft.verificationNote !== undefined) setVerificationNote(draft.verificationNote);
+        setSaveStatus('Draft restored');
+      }
+    } catch (e) {
+      console.error('Failed to restore draft', e);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Save draft on state changes
+  React.useEffect(() => {
+    const isSubmitted = (reports && reports.some(r => r.missionId === visitId)) || submitted;
+    if (isSubmitted) return;
+    
+    const draftState = {
+      step, checkedIn, checkinAt, visitOutcome, outcomeNote, crop, variety, growthStage,
+      area, condition, symptoms, fieldNotes, evidencePhotos, trapResult, trapVerification,
+      affectedArea, spread, aiResult, verificationStatus, verificationNote
+    };
+
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem(draftKey, JSON.stringify(draftState));
+        setSaveStatus(`Saved locally at ${new Date().toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' })}`);
+      } catch (e) {
+        if (e.name === 'QuotaExceededError') {
+          setSaveStatus('Failed to save locally (Storage full)');
+        } else {
+          setSaveStatus('Failed to save locally');
+        }
+      }
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [
+    draftKey, submitted, reports, visitId,
+    step, checkedIn, checkinAt, visitOutcome, outcomeNote, crop, variety, growthStage,
+    area, condition, symptoms, fieldNotes, evidencePhotos, trapResult, trapVerification,
+    affectedArea, spread, aiResult, verificationStatus, verificationNote
+  ]);
+
   const caseTitle = caseDetail?.problem || mission?.title || nearbyCase?.issue || visitId;
-  const farmer = nearbyCase?.farmer || null;
+  const farmer = mission?.farmerName || nearbyCase?.farmer || null;
   const location = mission?.location || nearbyCase?.village || '—';
   const fieldName = mission?.fieldName || location;
   const trap = mission?.trapId ? traps[mission.trapId] : null;
@@ -227,18 +365,21 @@ export default function FieldVisit({ visitId, onBack, onComplete }) {
     severityRecorded: !!affectedArea && !!spread,
   }), [checkedIn, crop, growthStage, symptoms, evidencePhotos, trap, trapVerification, affectedArea, spread]);
 
-  const canSubmit = checkedIn && symptoms.length > 0 && evidencePhotos.length > 0 && !!affectedArea && !!spread && !!verificationStatus && !!visitOutcome;
+  const isInaccessible = visitOutcome === 'field_inaccessible';
+  const canSubmit = checkedIn && !!visitOutcome && (isInaccessible || (symptoms.length > 0 && evidencePhotos.length > 0 && !!affectedArea && !!spread && !!verificationStatus));
 
   const missingItems = useMemo(() => {
     const missing = [];
     if (!checkedIn) missing.push('Check-in (Step 1)');
-    if (symptoms.length === 0) missing.push('at least one symptom (Step 3)');
-    if (evidencePhotos.length === 0) missing.push('at least one evidence photo (Step 4)');
-    if (!affectedArea || !spread) missing.push('affected area & spread (Step 6)');
-    if (!verificationStatus) missing.push('Scout Verification (Step 8)');
     if (!visitOutcome) missing.push('Field Visit Outcome (Step 9)');
+    if (!isInaccessible) {
+      if (symptoms.length === 0) missing.push('at least one symptom (Step 3)');
+      if (evidencePhotos.length === 0) missing.push('at least one evidence photo (Step 4)');
+      if (!affectedArea || !spread) missing.push('affected area & spread (Step 6)');
+      if (!verificationStatus) missing.push('Scout Verification (Step 8)');
+    }
     return missing;
-  }, [checkedIn, symptoms, evidencePhotos, affectedArea, spread, verificationStatus, visitOutcome]);
+  }, [checkedIn, symptoms, evidencePhotos, affectedArea, spread, verificationStatus, visitOutcome, isInaccessible]);
 
   const handleSubmit = () => {
     if (!canSubmit) return;
@@ -246,6 +387,12 @@ export default function FieldVisit({ visitId, onBack, onComplete }) {
     if (evidencePhotos.length > 0) addVisitPhotos(visitId, evidencePhotos);
     const missionLike = mission || { id: visitId, location, crop, coords: null };
     const outcomeLabel = VISIT_OUTCOME_OPTIONS.find((o) => o.value === visitOutcome)?.label || visitOutcome;
+    
+    // Clear the draft on submit
+    try {
+      localStorage.removeItem(draftKey);
+    } catch (e) {}
+
     setTimeout(() => {
       const report = submitReport(missionLike, {
         finding: aiResult ? aiResult.primary.label : 'Field observation',
@@ -329,7 +476,10 @@ export default function FieldVisit({ visitId, onBack, onComplete }) {
         <button onClick={onBack} className="flex items-center gap-1.5 text-sm font-semibold text-gov-textSec hover:text-gov-navy">
           <ArrowLeft size={16} /> Exit
         </button>
-        <span className="text-xs font-bold text-gov-textSec">{STEPS[step]} · {step + 1}/{STEPS.length}</span>
+        <div className="flex flex-col items-end">
+          <span className="text-xs font-bold text-gov-textSec">{STEPS[step]} · {step + 1}/{STEPS.length}</span>
+          {saveStatus && <span className="text-[10px] text-gov-textSec/80">{saveStatus}</span>}
+        </div>
       </div>
       <StepDots step={step} />
 
@@ -822,11 +972,18 @@ export default function FieldVisit({ visitId, onBack, onComplete }) {
             </div>
           </div>
 
-          {!canSubmit && (
-            <p className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3">
-              Complete before submitting: {missingItems.join(', ')}.
-            </p>
-          )}
+          <div className="bg-white border border-gov-border rounded-lg p-3 mb-4">
+            <h4 className="text-sm font-bold text-gov-navy mb-2">Report Readiness</h4>
+            <div className="space-y-0.5 divide-y divide-gray-100">
+              <ReadinessItem label="Location / Check-in" done={checkedIn} onFix={() => goToStep(0)} />
+              <ReadinessItem label="Field Visit Outcome" done={!!visitOutcome} onFix={() => goToStep(8)} />
+              <ReadinessItem label="Crop & field" done={!!crop && !!growthStage && !!area} onFix={() => goToStep(1)} notRequired={isInaccessible} />
+              <ReadinessItem label="Symptoms / observations" done={symptoms.length > 0} onFix={() => goToStep(2)} notRequired={isInaccessible} />
+              <ReadinessItem label="Evidence (Photos)" done={evidencePhotos.length > 0} onFix={() => goToStep(3)} notRequired={isInaccessible} />
+              <ReadinessItem label="Severity & Spread" done={!!affectedArea && !!spread} onFix={() => goToStep(5)} notRequired={isInaccessible} />
+              <ReadinessItem label="Scout Verification" done={!!verificationStatus} onFix={() => goToStep(7)} notRequired={isInaccessible} />
+            </div>
+          </div>
 
           <p className="text-xs text-gov-textSec mb-4">This report will be sent to the assigned Agriculture Officer for verification.</p>
 

@@ -10,6 +10,11 @@ export default function MissionDetail({ missionId, onBack, onStartVisit }) {
   const { missions, updateMissionStatus, farmerAvailabilities, updateFarmerAvailability } = useScout();
   const mission = missions.find((m) => m.id === missionId);
 
+  const [hasDraft, setHasDraft] = React.useState(false);
+  React.useEffect(() => {
+    setHasDraft(!!localStorage.getItem(`geofarm_draft_${missionId}`));
+  }, [missionId]);
+
   if (!mission) {
     return (
       <div className="space-y-4">
@@ -166,7 +171,15 @@ export default function MissionDetail({ missionId, onBack, onStartVisit }) {
           <dt className="text-gov-textSec">Last observation</dt>
           <dd className="font-semibold text-gov-navy text-right">{mission.lastObservation}</dd>
           <dt className="text-gov-textSec">Status</dt>
-          <dd className="text-right"><MissionStatusChip status={mission.status} size="sm" /></dd>
+          <dd className="text-right">
+            {hasDraft ? (
+              <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-bold text-gray-700 border border-gray-200">
+                Draft
+              </span>
+            ) : (
+              <MissionStatusChip status={mission.status} size="sm" />
+            )}
+          </dd>
         </dl>
       </Card>
 

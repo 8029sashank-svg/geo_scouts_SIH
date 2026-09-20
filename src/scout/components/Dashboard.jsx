@@ -250,6 +250,11 @@ function ActiveMissionCard({ mission, linkedCase, onOpenMission, onNavigate }) {
     mission.status === MISSION_STATUS.ACCEPTED || mission.status === MISSION_STATUS.IN_PROGRESS;
   const inRadius = isWithinOperatingRadius(mission.distanceKm);
 
+  const [hasDraft, setHasDraft] = React.useState(false);
+  React.useEffect(() => {
+    setHasDraft(!!localStorage.getItem(`geofarm_draft_${mission.id}`));
+  }, [mission.id]);
+
   const priorityBorder = {
     HIGH:   'border-red-300 bg-red-50/60',
     MEDIUM: 'border-amber-300 bg-amber-50/60',
@@ -271,6 +276,11 @@ function ActiveMissionCard({ mission, linkedCase, onOpenMission, onNavigate }) {
             <span className="flex items-center gap-1.5 text-xs font-bold text-amber-300">
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
               IN PROGRESS
+            </span>
+          ) : hasDraft ? (
+            <span className="flex items-center gap-1.5 text-xs font-bold text-blue-300">
+              <ClipboardList size={12} />
+              DRAFT SAVED
             </span>
           ) : (
             <span className="flex items-center gap-1.5 text-xs font-bold text-green-300">
