@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { MapPin, Navigation2, ClipboardList, Package, CheckCircle2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { MapPin, Navigation2, ClipboardList, CheckCircle2 } from 'lucide-react';
 import { useScout } from '../ScoutContext.jsx';
 import { MISSION_STATUS, NEARBY_CASES, STUDENT_PROGRESS } from '../mockData.js';
 import { isWithinOperatingRadius } from '../config.js';
@@ -20,27 +20,6 @@ const DONE_STATUSES = [MISSION_STATUS.COMPLETED, MISSION_STATUS.UNDER_REVIEW, MI
 export default function Missions({ onOpenMission, onStartVisit, onOpenReport }) {
   const { missions, reports } = useScout();
   const [filter, setFilter] = useState('All');
-  const [showKit, setShowKit] = useState(false);
-  const [kitReady, setKitReady] = useState({ count: 0, total: 11 });
-  useEffect(() => {
-    try {
-      // Check global kit (or first mission's kit)
-      const keys = Object.keys(localStorage).filter((k) => k.startsWith('geofarm_kit_before_'));
-      let best = 0;
-      for (const k of keys) {
-        const obj = JSON.parse(localStorage.getItem(k) || '{}');
-        const c = Object.values(obj).filter(Boolean).length;
-        if (c > best) best = c;
-      }
-      // Also check global
-      const globalRaw = localStorage.getItem('geofarm_kit_before_global');
-      if (globalRaw) {
-        const g = Object.values(JSON.parse(globalRaw)).filter(Boolean).length;
-        if (g > best) best = g;
-      }
-      setKitReady({ count: best, total: 11 });
-    } catch (_e) { /* ignore */ }
-  }, [showKit]);
 
   const assignedCount = missions.filter((m) => m.status === MISSION_STATUS.ACCEPTED).length;
   const activeCount = missions.filter(
@@ -80,22 +59,6 @@ export default function Missions({ onOpenMission, onStartVisit, onOpenReport }) 
           <p className="text-[10px] font-semibold text-gray-500">This Week</p>
         </div>
       </div>
-
-      <div className="bg-white border border-[#e4eae4] rounded-2xl p-4 flex items-center justify-between shadow-sm">
-        <div>
-          <h3 className="text-sm font-bold text-gray-900 flex items-center gap-1.5"><Package size={16} className="text-[#0C3B2E]" /> Field Kit</h3>
-          <p className={`text-xs font-bold mt-1 ${kitReady.count === kitReady.total ? 'text-green-700' : 'text-[#0C3B2E]'}`}>{kitReady.count === kitReady.total ? '✓ Ready for field visit' : `${kitReady.count} / ${kitReady.total} ready`}</p>
-        </div>
-        <button onClick={() => setShowKit((v) => !v)} className="text-xs font-bold bg-[#0C3B2E] text-white rounded-full px-3 py-1.5">{showKit ? 'Hide' : 'View Checklist'}</button>
-      </div>
-      {showKit && (
-        <div className="bg-white border border-[#e4eae4] rounded-2xl p-4">
-          <p className="text-xs text-gray-500 mb-2">Checklist persists locally. Open a Field Visit to see the full 3-tab kit.</p>
-          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div className="h-full bg-[#0C3B2E] rounded-full" style={{ width: `${Math.round((kitReady.count / kitReady.total) * 100)}%` }} />
-          </div>
-        </div>
-      )}
 
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
         {FILTERS.map((f) => (
