@@ -44,6 +44,11 @@ export default function Reports({ onOpenReport }) {
                 <span>Data quality {r.dataQuality}%</span>
               </span>
             </div>
+            {r.status === 'Needs Revisit' && (
+              <p className="text-[11px] font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg px-2.5 py-1.5 mt-2">
+                ⚠ Officer has requested a revisit — tap to view feedback and start revisit.
+              </p>
+            )}
           </button>
         ))}
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  ArrowLeft, MapPin, Camera, Bot, GraduationCap, ScanLine, BarChart3, Cloud, Landmark,
+  ArrowLeft, MapPin, Camera, Bot, GraduationCap, ScanLine, BarChart3, Cloud, Landmark, ClipboardList, RefreshCw,
 } from 'lucide-react';
 import { Card, CardHeader } from '../../components/ui/Card.jsx';
 import { useScout } from '../ScoutContext.jsx';
@@ -27,7 +27,7 @@ const EVIDENCE_CATEGORY_LABELS = {
   trap: 'Trap / sample evidence',
 };
 
-export default function ReportDetail({ reportId, onBack }) {
+export default function ReportDetail({ reportId, onBack, onStartRevisit }) {
   const { reports } = useScout();
   const report = reports.find((r) => r.id === reportId);
 
@@ -61,10 +61,22 @@ export default function ReportDetail({ reportId, onBack }) {
         </div>
       </div>
 
-      {report.status === 'Needs Revisit' && report.officerComment && (
+      {report.status === 'Needs Revisit' && (
         <Card className="border-red-200 bg-red-50">
-          <p className="text-xs font-bold text-red-700 uppercase tracking-wide mb-1">Needs Revisit — Officer Comment</p>
-          <p className="text-sm text-red-800">{report.officerComment}</p>
+          <p className="text-xs font-bold text-red-700 uppercase tracking-wide mb-1">Needs Revisit — Officer Feedback</p>
+          {report.officerComment ? (
+            <p className="text-sm text-red-800 mb-3">{report.officerComment}</p>
+          ) : (
+            <p className="text-sm text-red-700 mb-3">The Agriculture Officer has requested a revisit. Check for a specific comment below.</p>
+          )}
+          {onStartRevisit && (
+            <button
+              onClick={() => onStartRevisit(report.missionId || reportId)}
+              className="flex items-center gap-2 text-sm font-bold text-red-700 border border-red-300 bg-white rounded-lg px-4 py-2 hover:bg-red-50 transition-colors"
+            >
+              <RefreshCw size={14} /> Start Revisit
+            </button>
+          )}
         </Card>
       )}
 
@@ -111,6 +123,16 @@ export default function ReportDetail({ reportId, onBack }) {
           <dl className="space-y-2 text-sm">
             <Row label="Status" value={VERIFY_LABELS[report.scoutVerification.status] || report.scoutVerification.status} />
             {report.scoutVerification.note && <Row label="Note" value={report.scoutVerification.note} />}
+          </dl>
+        </Card>
+      )}
+
+      {(report.visitOutcome || report.outcomeLabel) && (
+        <Card>
+          <CardHeader icon={ClipboardList} title="Field Visit Outcome" subtitle="Student’s record of what happened during the physical visit" />
+          <dl className="space-y-2 text-sm">
+            <Row label="Outcome" value={report.outcomeLabel || report.visitOutcome} />
+            {report.outcomeNote && <Row label="Notes" value={report.outcomeNote} />}
           </dl>
         </Card>
       )}

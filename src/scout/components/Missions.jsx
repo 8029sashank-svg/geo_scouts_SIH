@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Navigation2, ClipboardList, CheckCircle2 } from 'lucide-react';
+import { Navigation2, ClipboardList } from 'lucide-react';
 import { useScout } from '../ScoutContext.jsx';
 import { MISSION_STATUS, NEARBY_CASES, STUDENT_PROGRESS } from '../mockData.js';
 import { isWithinOperatingRadius } from '../config.js';

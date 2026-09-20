@@ -38,7 +38,17 @@ const STEPS = [
   'Severity',
   'AI Assessment',
   'Verification',
+  'Outcome',
   'Review',
+];
+
+const VISIT_OUTCOME_OPTIONS = [
+  { value: 'issue_verified',      label: 'Issue Verified',         hint: 'Problem confirmed in the field.' },
+  { value: 'no_issue_found',      label: 'No Issue Found',         hint: 'Field visited; no significant problem observed.' },
+  { value: 'inconclusive',        label: 'Symptoms Inconclusive',  hint: 'Symptoms present but uncertain.' },
+  { value: 'farmer_unavailable',  label: 'Farmer Unavailable',     hint: 'Could not meet the farmer at the time of visit.' },
+  { value: 'field_inaccessible',  label: 'Field Inaccessible',     hint: 'Could not reach the field.' },
+  { value: 'revisit_required',    label: 'Revisit Required',       hint: 'More information needed; will revisit.' },
 ];
 
 const EVIDENCE_CATEGORIES = [
@@ -98,6 +108,10 @@ export default function FieldVisit({ visitId, onBack, onComplete }) {
   const [checkinAt, setCheckinAt] = useState(null);
   const [kitPacked, setKitPacked] = useState({});
   const [showKit, setShowKit] = useState(false);
+
+  // Step 8 — field visit outcome
+  const [visitOutcome, setVisitOutcome] = useState(null);
+  const [outcomeNote, setOutcomeNote] = useState('');
 
   // Step 1 — crop & field
   const [crop, setCrop] = useState(mission?.crop || nearbyCase?.crop || '');
@@ -213,7 +227,7 @@ export default function FieldVisit({ visitId, onBack, onComplete }) {
     severityRecorded: !!affectedArea && !!spread,
   }), [checkedIn, crop, growthStage, symptoms, evidencePhotos, trap, trapVerification, affectedArea, spread]);
 
-  const canSubmit = checkedIn && symptoms.length > 0 && evidencePhotos.length > 0 && !!affectedArea && !!spread && !!verificationStatus;
+  const canSubmit = checkedIn && symptoms.length > 0 && evidencePhotos.length > 0 && !!affectedArea && !!spread && !!verificationStatus && !!visitOutcome;
 
   const missingItems = useMemo(() => {
     const missing = [];
@@ -222,14 +236,16 @@ export default function FieldVisit({ visitId, onBack, onComplete }) {
     if (evidencePhotos.length === 0) missing.push('at least one evidence photo (Step 4)');
     if (!affectedArea || !spread) missing.push('affected area & spread (Step 6)');
     if (!verificationStatus) missing.push('Scout Verification (Step 8)');
+    if (!visitOutcome) missing.push('Field Visit Outcome (Step 9)');
     return missing;
-  }, [checkedIn, symptoms, evidencePhotos, affectedArea, spread, verificationStatus]);
+  }, [checkedIn, symptoms, evidencePhotos, affectedArea, spread, verificationStatus, visitOutcome]);
 
   const handleSubmit = () => {
     if (!canSubmit) return;
     setSubmitting(true);
     if (evidencePhotos.length > 0) addVisitPhotos(visitId, evidencePhotos);
     const missionLike = mission || { id: visitId, location, crop, coords: null };
+    const outcomeLabel = VISIT_OUTCOME_OPTIONS.find((o) => o.value === visitOutcome)?.label || visitOutcome;
     setTimeout(() => {
       const report = submitReport(missionLike, {
         finding: aiResult ? aiResult.primary.label : 'Field observation',
@@ -237,6 +253,9 @@ export default function FieldVisit({ visitId, onBack, onComplete }) {
         dataQuality: dataQuality.score,
         aiAssessment: aiResult ? { diagnosis: aiResult.primary.label, confidence: aiResult.primary.confidence, alternatives: aiResult.alternatives } : null,
         scoutVerification: verificationStatus ? { status: verificationStatus, note: verificationNote } : null,
+        visitOutcome,
+        outcomeLabel,
+        outcomeNote: outcomeNote.trim() || null,
         severity: (affectedArea || spread) ? { affectedArea, spread } : null,
         trapCount: trapResult?.total ?? null,
         trend: trapResult ? `+${trapResult.changePct}%` : null,
@@ -254,6 +273,7 @@ export default function FieldVisit({ visitId, onBack, onComplete }) {
           ...(trap ? [{ time: 'now', icon: 'trap', label: 'Smart trap scanned' }] : []),
           ...(aiResult ? [{ time: 'now', icon: 'ai', label: 'AI preliminary assessment completed' }] : []),
           { time: 'now', icon: 'grad', label: 'Scout verification recorded' },
+          { time: 'now', icon: 'outcome', label: `Field Visit Outcome: ${outcomeLabel}` },
           { time: 'now', icon: 'chart', label: 'Risk recalculated' },
           { time: 'now', icon: 'cloud', label: 'Report uploaded' },
           { time: 'now', icon: 'gov', label: 'Awaiting officer verification' },
@@ -675,8 +695,41 @@ export default function FieldVisit({ visitId, onBack, onComplete }) {
         </Card>
       )}
 
-      {/* STEP 8: Review */}
+      {/* STEP 8 → now step 9 after inserting Outcome */}
+
+      {/* STEP 8: Field Visit Outcome */}
       {step === 8 && (
+        <Card>
+          <CardHeader icon={ClipboardCheck} title="Field Visit Outcome" subtitle="Record what happened during the physical visit — separate from the AI assessment" />
+          <div className="space-y-2 mb-4">
+            {VISIT_OUTCOME_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setVisitOutcome(opt.value)}
+                className={`w-full text-left px-4 py-3 rounded-lg border transition-colors ${
+                  visitOutcome === opt.value
+                    ? 'bg-gov-blue/10 border-gov-blue'
+                    : 'border-gov-border hover:border-gov-blue/50 bg-white'
+                }`}
+              >
+                <p className={`text-sm font-bold ${visitOutcome === opt.value ? 'text-gov-blue' : 'text-gov-navy'}`}>{opt.label}</p>
+                <p className="text-xs text-gov-textSec mt-0.5">{opt.hint}</p>
+              </button>
+            ))}
+          </div>
+          <label className="block text-xs font-bold text-gov-textSec uppercase tracking-wide mb-1.5">Outcome Notes (optional)</label>
+          <textarea
+            value={outcomeNote}
+            onChange={(e) => setOutcomeNote(e.target.value)}
+            rows={3}
+            placeholder="Briefly describe what happened during the visit."
+            className="w-full px-3 py-2.5 text-sm border border-gov-border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-gov-blue/30 focus:border-gov-blue"
+          />
+        </Card>
+      )}
+
+      {/* STEP 9: Review */}
+      {step === 9 && (
         <Card>
           <CardHeader icon={ClipboardCheck} title="Review Field Report" subtitle="This is what the Agriculture Officer will see" />
 
@@ -713,6 +766,11 @@ export default function FieldVisit({ visitId, onBack, onComplete }) {
           <ReviewSection title="Scout Verification" onEdit={() => goToStep(7)}>
             <Row label="Status" value={verificationStatus ? VERIFY_LABELS[verificationStatus] : '—'} />
             {verificationNote && <Row label="Note" value={verificationNote} />}
+          </ReviewSection>
+
+          <ReviewSection title="Field Visit Outcome" onEdit={() => goToStep(8)}>
+            <Row label="Outcome" value={visitOutcome ? (VISIT_OUTCOME_OPTIONS.find((o) => o.value === visitOutcome)?.label || visitOutcome) : '—'} />
+            {outcomeNote.trim() && <Row label="Notes" value={outcomeNote.trim()} />}
           </ReviewSection>
 
           <ReviewSection title="Smart Trap / Conditions" onEdit={() => goToStep(4)}>
@@ -775,7 +833,7 @@ export default function FieldVisit({ visitId, onBack, onComplete }) {
           )}
           <button
             onClick={() => setStep((s) => s + 1)}
-            disabled={step === 0 && !checkedIn}
+            disabled={(step === 0 && !checkedIn) || (step === 8 && !visitOutcome)}
             className="flex-1 bg-gov-blue hover:bg-gov-navy disabled:opacity-50 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2"
           >
             Continue <ArrowRight size={16} />

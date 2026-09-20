@@ -140,7 +140,7 @@ export default function ScoutApp() {
       case 'reports':
         return <Reports onOpenReport={openReport} />;
       case 'reportDetail':
-        return <ReportDetail reportId={activeReportId} onBack={() => setScreen('visits')} />;
+        return <ReportDetail reportId={activeReportId} onBack={() => setScreen('visits')} onStartRevisit={startFieldVisit} />;
       case 'library':
       case 'guide':
         return <FieldGuide />;

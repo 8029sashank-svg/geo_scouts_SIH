@@ -185,6 +185,9 @@ export function ScoutProvider({ children }) {
         aiConfidence: reportData.aiConfidence ?? reportData.aiAssessment?.confidence ?? null,
         aiAssessment: reportData.aiAssessment || null,
         scoutVerification: reportData.scoutVerification || null,
+        visitOutcome: reportData.visitOutcome || null,
+        outcomeLabel: reportData.outcomeLabel || null,
+        outcomeNote: reportData.outcomeNote || null,
         severity: reportData.severity || null,
         fieldNotes: reportData.fieldNotes || '',
         trapCount: reportData.trapCount ?? null,
@@ -233,6 +236,19 @@ export function ScoutProvider({ children }) {
     [isOnline, queueForSync, addNotification, updateMissionStatus, markSynced, updateVisitStatus, awardPoints, visits, awardedReportIds]
   );
 
+  // Applies a status + optional officerComment to a report. Used to
+  // simulate the Needs Revisit state without a real Officer Portal.
+  // Mock only — in production this would come from a server push.
+  const updateReportStatus = useCallback((reportId, status, officerComment) => {
+    setReports((prev) =>
+      prev.map((r) =>
+        r.id === reportId
+          ? { ...r, status, officerComment: officerComment ?? r.officerComment }
+          : r
+      )
+    );
+  }, []);
+
   const value = useMemo(
     () => ({
       scout: SCOUT_PROFILE,
@@ -240,6 +256,7 @@ export function ScoutProvider({ children }) {
       updateMissionStatus,
       reports,
       submitReport,
+      updateReportStatus,
       notifications,
       addNotification,
       markNotificationRead,
@@ -268,6 +285,7 @@ export function ScoutProvider({ children }) {
       updateMissionStatus,
       reports,
       submitReport,
+      updateReportStatus,
       notifications,
       addNotification,
       markNotificationRead,
